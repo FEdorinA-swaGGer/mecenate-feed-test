@@ -1,4 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image, StyleSheet, Text, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import { PostDto } from '../api/feed.types';
 import { PaidPostPlaceholder } from './PaidPostPlaceholder';
@@ -8,92 +10,165 @@ type PostCardProps = {
   post: PostDto;
 };
 
+type LikePillProps = { count: number };
+type CommentPillProps = { count: number };
+
+const LikePill = ({ count }: LikePillProps) => (
+  <View style={styles.actionPill}>
+    <View style={styles.pillIconWrap}>
+      <Ionicons
+        name="heart-outline"
+        size={theme.feedCard.pillIconSize}
+        color={theme.colors.pillIconLike}
+      />
+    </View>
+    <Text style={styles.actionPillText}>{count}</Text>
+  </View>
+);
+
+const CommentPill = ({ count }: CommentPillProps) => (
+  <View style={styles.actionPill}>
+    <View style={styles.pillIconWrap}>
+      <Svg width={15} height={14} viewBox="0 0 15 14" fill="none">
+        <Path
+          d="M15 6.09375C15 9.45996 11.6426 12.1875 7.50002 12.1875C6.4131 12.1875 5.38185 12 4.45021 11.6631C4.10158 11.918 3.53322 12.2666 2.85939 12.5596C2.15626 12.8643 1.30958 13.125 0.468764 13.125C0.278335 13.125 0.108413 13.0107 0.0351706 12.835C-0.0380716 12.6592 0.00294399 12.46 0.13478 12.3252L0.143569 12.3164C0.152358 12.3076 0.164077 12.2959 0.181655 12.2754C0.213882 12.2402 0.263686 12.1846 0.32521 12.1084C0.445327 11.9619 0.60646 11.7451 0.770522 11.4756C1.06349 10.9893 1.34181 10.3506 1.39748 9.63281C0.518569 8.63672 1.43097e-05 7.41504 1.43097e-05 6.09375C1.43097e-05 2.72754 3.35744 0 7.50002 0C11.6426 0 15 2.72754 15 6.09375Z"
+          fill="#57626F"
+        />
+      </Svg>
+    </View>
+    <Text style={styles.actionPillText}>{count}</Text>
+  </View>
+);
+
 export const PostCard = ({ post }: PostCardProps) => {
+  const isPaid = post.tier === 'paid';
+
   return (
     <View style={styles.card}>
-      <View style={styles.header}>
-        <Image source={{ uri: post.author.avatarUrl }} style={styles.avatar} />
-        <View style={styles.headerText}>
-          <Text style={styles.username}>{post.author.displayName}</Text>
-          <Text style={styles.handle}>@{post.author.username}</Text>
+      <View style={styles.insetHorizontal}>
+        <View style={styles.header}>
+          <Image source={{ uri: post.author.avatarUrl }} style={styles.avatar} />
+          <Text style={styles.displayName} numberOfLines={1}>
+            {post.author.displayName}
+          </Text>
         </View>
       </View>
 
-      <Text style={styles.title}>{post.title}</Text>
+      {!isPaid ? (
+        <View style={styles.coverWrap} collapsable={false}>
+          <Image
+            key={`${post.id}:${post.coverUrl}`}
+            source={{ uri: post.coverUrl }}
+            style={styles.coverImage}
+            resizeMode="cover"
+          />
+        </View>
+      ) : null}
 
-      {post.tier === 'paid' ? (
-        <PaidPostPlaceholder />
-      ) : (
-        <>
-          <Text style={styles.preview}>{post.preview}</Text>
-          <Image source={{ uri: post.coverUrl }} style={styles.cover} />
-        </>
-      )}
+      <View style={styles.insetHorizontal}>
+        <Text style={styles.title}>{post.title}</Text>
 
-      <View style={styles.metaRow}>
-        <Text style={styles.meta}>❤️ {post.likesCount}</Text>
-        <Text style={styles.meta}>💬 {post.commentsCount}</Text>
+        {isPaid ? (
+          <PaidPostPlaceholder />
+        ) : (
+          <Text style={styles.preview} numberOfLines={2}>
+            {post.preview}
+          </Text>
+        )}
+
+        <View style={styles.actionsRow}>
+          <LikePill count={post.likesCount} />
+          <CommentPill count={post.commentsCount} />
+        </View>
       </View>
     </View>
   );
 };
 
+const fc = theme.feedCard;
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    width: '100%',
+  },
+  insetHorizontal: {
+    paddingHorizontal: fc.contentPaddingH,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  headerText: {
-    marginLeft: theme.spacing.sm,
+    gap: theme.spacing.md,
+    paddingTop: fc.headerPaddingTop,
+    paddingBottom: fc.headerPaddingBottom,
   },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: theme.radius.round,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.colors.imagePlaceholder,
   },
-  username: {
+  displayName: {
+    flex: 1,
     color: theme.colors.textPrimary,
-    fontWeight: '600',
+    fontSize: theme.typography.authorName,
+    lineHeight: theme.typography.authorNameLineHeight,
+    fontWeight: '700',
   },
-  handle: {
-    color: theme.colors.textSecondary,
-    fontSize: 12,
+  coverWrap: {
+    marginTop: theme.spacing.md,
+    width: '100%',
+    aspectRatio: theme.layout.postCoverMediaAspectRatio,
+    backgroundColor: theme.colors.imagePlaceholder,
+  },
+  coverImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
   title: {
+    marginTop: fc.titleMarginTop,
     color: theme.colors.textPrimary,
     fontWeight: '700',
-    fontSize: 18,
-    marginBottom: theme.spacing.sm,
+    fontSize: theme.typography.postTitle,
+    lineHeight: theme.typography.postTitleLineHeight,
   },
   preview: {
+    marginTop: fc.previewMarginTop,
     color: theme.colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: theme.typography.previewSecondary,
+    lineHeight: theme.typography.previewSecondaryLineHeight,
+    fontWeight: '500',
   },
-  cover: {
-    width: '100%',
-    height: 180,
-    borderRadius: theme.radius.md,
-    marginTop: theme.spacing.md,
-    backgroundColor: '#E5E7EB',
-  },
-  metaRow: {
+  actionsRow: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
-    marginTop: theme.spacing.md,
+    alignItems: 'center',
+    marginTop: fc.actionsMarginTop,
+    marginBottom: fc.actionsMarginBottom,
+    gap: fc.pillRowGap,
   },
-  meta: {
-    color: theme.colors.textSecondary,
-    fontSize: 14,
+  actionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.pillBackground,
+    borderRadius: theme.radius.pill,
+    paddingVertical: fc.pillPaddingV,
+    paddingLeft: 6,
+    paddingRight: fc.pillPaddingH,
+    gap: fc.pillIconGap,
+  },
+  pillIconWrap: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionPillText: {
+    color: theme.colors.pillMetric,
+    fontSize: theme.typography.pillMetric,
+    lineHeight: theme.typography.pillMetricLineHeight,
+    fontVariant: ['tabular-nums'],
+    fontWeight: '700',
   },
 });

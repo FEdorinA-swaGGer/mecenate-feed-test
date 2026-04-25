@@ -4,10 +4,13 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { useFeedInfiniteQuery } from '../api/feed.query';
 import { PostDto } from '../api/feed.types';
@@ -15,7 +18,8 @@ import { ErrorState } from '../components/ErrorState';
 import { PostCard } from '../components/PostCard';
 import { theme } from '../../../shared/theme/theme';
 
-export const FeedScreen = () => {
+const FeedScreenBody = () => {
+  const insets = useSafeAreaInsets();
   const {
     data,
     isLoading,
@@ -56,7 +60,14 @@ export const FeedScreen = () => {
         data={posts}
         keyExtractor={(post) => post.id}
         renderItem={({ item }) => <PostCard post={item} />}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: 0,
+            paddingBottom: theme.spacing.xxl + insets.bottom,
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.4}
         refreshControl={
@@ -66,7 +77,6 @@ export const FeedScreen = () => {
             tintColor={theme.colors.accent}
           />
         }
-        ListHeaderComponent={<Text style={styles.headerTitle}>Лента</Text>}
         ListFooterComponent={
           isFetchingNextPage ? (
             <View style={styles.footerLoader}>
@@ -79,26 +89,25 @@ export const FeedScreen = () => {
   );
 };
 
+export const FeedScreen = () => (
+  <SafeAreaProvider>
+    <FeedScreenBody />
+  </SafeAreaProvider>
+);
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: theme.colors.background,
   },
   content: {
-    padding: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl,
+    flexGrow: 1,
   },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.background,
-  },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '700',
-    marginBottom: theme.spacing.lg,
-    color: theme.colors.textPrimary,
   },
   footerLoader: {
     paddingVertical: theme.spacing.md,
