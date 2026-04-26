@@ -3,7 +3,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { PostDto } from '../api/feed.types';
-import { PaidPostPlaceholder } from './PaidPostPlaceholder';
+import { PaidPostLockedCover, PaidPostLockedSkeleton } from './PaidPostPlaceholder';
 import { theme } from '../../../shared/theme/theme';
 
 type PostCardProps = {
@@ -54,22 +54,27 @@ export const PostCard = ({ post }: PostCardProps) => {
         </View>
       </View>
 
-      {!isPaid ? (
-        <View style={styles.coverWrap} collapsable={false}>
+      <View
+        style={[styles.coverWrap, isPaid ? styles.coverWrapPaid : null]}
+        collapsable={false}
+      >
+        {isPaid ? (
+          <PaidPostLockedCover coverUrl={post.coverUrl} imageKey={`${post.id}:${post.coverUrl}`} />
+        ) : (
           <Image
             key={`${post.id}:${post.coverUrl}`}
             source={{ uri: post.coverUrl }}
             style={styles.coverImage}
             resizeMode="cover"
           />
-        </View>
-      ) : null}
+        )}
+      </View>
 
       <View style={styles.insetHorizontal}>
-        <Text style={styles.title}>{post.title}</Text>
+        {!isPaid ? <Text style={styles.title}>{post.title}</Text> : null}
 
         {isPaid ? (
-          <PaidPostPlaceholder />
+          <PaidPostLockedSkeleton />
         ) : (
           <Text style={styles.preview} numberOfLines={2}>
             {post.preview}
@@ -121,6 +126,10 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: theme.layout.postCoverMediaAspectRatio,
     backgroundColor: theme.colors.imagePlaceholder,
+  },
+  /** Figma scroll-news_content: 16px gap before media */
+  coverWrapPaid: {
+    marginTop: theme.spacing.lg,
   },
   coverImage: {
     ...StyleSheet.absoluteFillObject,

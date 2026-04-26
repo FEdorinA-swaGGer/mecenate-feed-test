@@ -11,8 +11,10 @@ export const colors = {
   accentText: '#FFFFFF',
   danger: '#DC2626',
   imagePlaceholder: '#E5E5EA',
-  paidPostSurface: '#EEF2FF',
-  paidPostBorder: '#C7D2FE',
+  /** Paid/locked post — Figma donate CTA + icon */
+  paidDonatePrimary: '#6115CD',
+  paidLockedSkeleton: 'rgba(238, 239, 241, 0.8)',
+  paidLockedOverlayDim: 'rgba(0, 0, 0, 0.5)',
   shadow: '#000000',
   pillBackground: '#EFF2F7',
   pillIconLike: '#57626F',
