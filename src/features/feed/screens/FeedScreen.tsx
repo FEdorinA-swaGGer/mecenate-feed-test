@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,14 +13,15 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { useFeedInfiniteQuery } from '../api/feed.query';
-import { PostDto } from '../api/feed.types';
+import { FEED_QUERY_KEY, useFeedInfiniteQuery } from '../api/feed.query';
+import { PostDto, PostsPageDto } from '../api/feed.types';
 import { ErrorState } from '../components/ErrorState';
 import { PostCard } from '../components/PostCard';
 import { theme } from '../../../shared/theme/theme';
 
 const FeedScreenBody = () => {
   const endReachedLockRef = useRef(false);
+  const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
   const {
     data,
@@ -55,6 +57,26 @@ const FeedScreenBody = () => {
     }
   };
 
+  const onRefresh = () => {
+    endReachedLockRef.current = false;
+    queryClient.setQueryData(
+      FEED_QUERY_KEY,
+      (oldData: InfiniteData<PostsPageDto, string | null> | undefined) => {
+        if (!oldData) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          pages: oldData.pages.slice(0, 1),
+          pageParams: [null],
+        };
+      },
+    );
+
+    void refetch();
+  };
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -86,7 +108,7 @@ const FeedScreenBody = () => {
         refreshControl={
           <RefreshControl
             refreshing={isRefetching && !isFetchingNextPage}
-            onRefresh={() => void refetch()}
+            onRefresh={onRefresh}
             tintColor={theme.colors.accent}
           />
         }
