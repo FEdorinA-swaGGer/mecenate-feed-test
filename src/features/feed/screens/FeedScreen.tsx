@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -19,6 +19,7 @@ import { PostCard } from '../components/PostCard';
 import { theme } from '../../../shared/theme/theme';
 
 const FeedScreenBody = () => {
+  const endReachedLockRef = useRef(false);
   const insets = useSafeAreaInsets();
   const {
     data,
@@ -36,8 +37,20 @@ const FeedScreenBody = () => {
     [data?.pages],
   );
 
+  useEffect(() => {
+    if (!isFetchingNextPage) {
+      endReachedLockRef.current = false;
+    }
+  }, [isFetchingNextPage]);
+
   const onEndReached = () => {
-    if (hasNextPage && !isFetchingNextPage && !isRefetching) {
+    if (
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isRefetching &&
+      !endReachedLockRef.current
+    ) {
+      endReachedLockRef.current = true;
       void fetchNextPage();
     }
   };
