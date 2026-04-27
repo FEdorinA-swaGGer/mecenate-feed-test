@@ -38,6 +38,7 @@ const FeedScreenBody = () => {
     () => data?.pages.flatMap((page) => page.posts) ?? [],
     [data?.pages],
   );
+  const hasLoadedPosts = posts.length > 0;
 
   useEffect(() => {
     if (!isFetchingNextPage) {
@@ -85,7 +86,7 @@ const FeedScreenBody = () => {
     );
   }
 
-  if (isError) {
+  if (isError && !hasLoadedPosts) {
     return <ErrorState onRetry={() => void refetch()} />;
   }
 
