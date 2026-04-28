@@ -1,4 +1,5 @@
 import { apiClient } from '../../../shared/api/client';
+import { env } from '../../../shared/config/env';
 
 import { PostsPageDto, PostsResponseDto } from './feed.types';
 
@@ -15,6 +16,7 @@ export const getPosts = async ({
     params: {
       limit,
       cursor: cursor ?? undefined,
+      simulate_error: env.simulateFeedError || undefined,
     },
   });
 
