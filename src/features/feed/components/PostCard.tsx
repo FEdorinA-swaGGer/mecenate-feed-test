@@ -13,6 +13,10 @@ type PostCardProps = {
 };
 
 type CommentPillProps = { count: number };
+const SHOW_MORE_FADE_WIDTH = 18;
+const SHOW_MORE_CONTROL_HEIGHT = 20;
+const SHOW_MORE_LABEL_MIN_WIDTH = 96;
+const SHOW_MORE_TEXT_GUARD_WIDTH = 92;
 
 const CommentPill = ({ count }: CommentPillProps) => (
   <View style={styles.actionPill}>
@@ -29,7 +33,7 @@ const CommentPill = ({ count }: CommentPillProps) => (
 );
 
 const ShowMoreFader = () => (
-  <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+  <Svg width={SHOW_MORE_FADE_WIDTH} height={SHOW_MORE_CONTROL_HEIGHT} viewBox="0 0 20 20" fill="none">
     <Defs>
       <LinearGradient id="showMoreFade" x1="0" y1="10" x2="20" y2="10" gradientUnits="userSpaceOnUse">
         <Stop stopColor="#FFFFFF" stopOpacity="0" />
@@ -44,10 +48,12 @@ const ShowMoreFader = () => (
 export const PostCard = ({ post, onPress }: PostCardProps) => {
   const isPaid = post.tier === 'paid';
   const [isExpanded, setIsExpanded] = useState(false);
-  const canExpand = useMemo(() => post.preview.trim().length > 110, [post.preview]);
+  const [canExpand, setCanExpand] = useState(false);
+  const hiddenPreviewKey = useMemo(() => `${post.id}:${post.preview}`, [post.id, post.preview]);
 
   useEffect(() => {
     setIsExpanded(false);
+    setCanExpand(false);
   }, [post.id]);
 
   return (
@@ -86,23 +92,46 @@ export const PostCard = ({ post, onPress }: PostCardProps) => {
           ) : (
             <>
               <Text
-                style={styles.preview}
-                numberOfLines={isExpanded ? undefined : 2}
+                key={hiddenPreviewKey}
+                style={[styles.preview, styles.previewMeasureProbe]}
+                onTextLayout={({ nativeEvent }) => {
+                  const lines = nativeEvent.lines;
+                  const shouldExpand = lines.length > 2;
+                  if (shouldExpand !== canExpand) {
+                    setCanExpand(shouldExpand);
+                  }
+                }}
               >
                 {post.preview}
               </Text>
-              {canExpand ? (
-                <Pressable
-                  onPress={() => setIsExpanded((prev) => !prev)}
-                  style={({ pressed }) => [
-                    styles.expandButton,
-                    pressed ? styles.expandButtonPressed : null,
+              <View style={styles.previewWrap}>
+                <Text
+                  style={[
+                    styles.preview,
+                    canExpand && !isExpanded ? styles.previewCollapsedWithShowMore : null,
                   ]}
+                  numberOfLines={isExpanded ? undefined : 2}
+                  ellipsizeMode="clip"
                 >
-                  {!isExpanded ? <ShowMoreFader /> : null}
-                  <Text style={styles.expandButtonText}>{isExpanded ? 'Свернуть' : 'Показать ещё'}</Text>
-                </Pressable>
-              ) : null}
+                  {post.preview}
+                </Text>
+                {canExpand ? (
+                  <Pressable
+                    onPress={() => setIsExpanded((prev) => !prev)}
+                    style={({ pressed }) => [
+                      isExpanded ? styles.expandButtonExpanded : styles.expandButtonInline,
+                      pressed ? styles.expandButtonPressed : null,
+                    ]}
+                  >
+                    {!isExpanded ? <ShowMoreFader /> : null}
+                    <View style={styles.expandButtonLabelWrap}>
+                      <Text style={styles.expandButtonText} numberOfLines={1}>
+                        {isExpanded ? 'Свернуть' : 'Показать еще'}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ) : null}
+              </View>
             </>
           )}
         </View>
@@ -179,9 +208,31 @@ const styles = StyleSheet.create({
     lineHeight: theme.typography.previewSecondaryLineHeight,
     fontWeight: '500',
   },
-  expandButton: {
-    marginTop: theme.spacing.sm,
-    alignSelf: 'flex-end',
+  previewMeasureProbe: {
+    position: 'absolute',
+    opacity: 0,
+    zIndex: -1,
+    pointerEvents: 'none',
+  },
+  previewWrap: {
+    position: 'relative',
+  },
+  previewCollapsedWithShowMore: {
+    paddingRight: SHOW_MORE_TEXT_GUARD_WIDTH,
+  },
+  expandButtonInline: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    height: SHOW_MORE_CONTROL_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    zIndex: 2,
+  },
+  expandButtonExpanded: {
+    marginTop: theme.spacing.xs,
+    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -193,7 +244,15 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.authorName,
     lineHeight: theme.typography.authorNameLineHeight,
     fontWeight: '600',
-    marginLeft: 2,
+    marginLeft: 0,
+  },
+  expandButtonLabelWrap: {
+    minWidth: SHOW_MORE_LABEL_MIN_WIDTH,
+    height: SHOW_MORE_CONTROL_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingLeft: 2,
+    backgroundColor: theme.colors.surface,
   },
   actionsRow: {
     flexDirection: 'row',
