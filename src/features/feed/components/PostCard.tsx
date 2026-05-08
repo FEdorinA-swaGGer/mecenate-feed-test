@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 import { AnimatedLikePill } from '../../post-detail/components/AnimatedLikePill';
 import { PostDto } from '../api/feed.types';
@@ -26,6 +26,19 @@ const CommentPill = ({ count }: CommentPillProps) => (
     </View>
     <Text style={styles.actionPillText}>{count}</Text>
   </View>
+);
+
+const ShowMoreFader = () => (
+  <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+    <Defs>
+      <LinearGradient id="showMoreFade" x1="0" y1="10" x2="20" y2="10" gradientUnits="userSpaceOnUse">
+        <Stop stopColor="#FFFFFF" stopOpacity="0" />
+        <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0.8" />
+        <Stop offset="1" stopColor="#FFFFFF" />
+      </LinearGradient>
+    </Defs>
+    <Rect width={20} height={20} fill="url(#showMoreFade)" />
+  </Svg>
 );
 
 export const PostCard = ({ post, onPress }: PostCardProps) => {
@@ -86,9 +99,8 @@ export const PostCard = ({ post, onPress }: PostCardProps) => {
                     pressed ? styles.expandButtonPressed : null,
                   ]}
                 >
-                  <Text style={styles.expandButtonText}>
-                    {isExpanded ? 'Свернуть' : 'Показать ещё'}
-                  </Text>
+                  {!isExpanded ? <ShowMoreFader /> : null}
+                  <Text style={styles.expandButtonText}>{isExpanded ? 'Свернуть' : 'Показать ещё'}</Text>
                 </Pressable>
               ) : null}
             </>
@@ -169,7 +181,9 @@ const styles = StyleSheet.create({
   },
   expandButton: {
     marginTop: theme.spacing.sm,
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   expandButtonPressed: {
     opacity: 0.8,
@@ -179,6 +193,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.authorName,
     lineHeight: theme.typography.authorNameLineHeight,
     fontWeight: '600',
+    marginLeft: 2,
   },
   actionsRow: {
     flexDirection: 'row',
