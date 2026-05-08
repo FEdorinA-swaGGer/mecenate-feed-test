@@ -61,15 +61,16 @@ const FeedScreenBody = () => {
   const hasLoadedPosts = posts.length > 0;
 
   useEffect(() => {
-    if (!isFetchingNextPage) {
+    if (!isFetchingNextPage && !isFetchNextPageError) {
       endReachedLockRef.current = false;
     }
-  }, [isFetchingNextPage]);
+  }, [isFetchNextPageError, isFetchingNextPage]);
 
   const onEndReached = () => {
     if (
       hasNextPage &&
       !isFetchingNextPage &&
+      !isFetchNextPageError &&
       !isRefetching &&
       !endReachedLockRef.current
     ) {
@@ -181,7 +182,10 @@ const FeedScreenBody = () => {
                   styles.footerRetryButton,
                   pressed ? styles.footerRetryButtonPressed : null,
                 ]}
-                onPress={() => void fetchNextPage()}
+                onPress={() => {
+                  endReachedLockRef.current = false;
+                  void fetchNextPage();
+                }}
               >
                 <Text style={styles.footerRetryButtonText}>Повторить</Text>
               </Pressable>

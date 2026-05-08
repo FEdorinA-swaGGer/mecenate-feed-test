@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -31,8 +31,11 @@ const CommentPill = ({ count }: CommentPillProps) => (
 export const PostCard = ({ post, onPress }: PostCardProps) => {
   const isPaid = post.tier === 'paid';
   const [isExpanded, setIsExpanded] = useState(false);
-  const [previewLineCount, setPreviewLineCount] = useState(0);
-  const canExpand = useMemo(() => previewLineCount > 2, [previewLineCount]);
+  const canExpand = useMemo(() => post.preview.trim().length > 110, [post.preview]);
+
+  useEffect(() => {
+    setIsExpanded(false);
+  }, [post.id]);
 
   return (
     <View style={styles.card}>
@@ -72,12 +75,6 @@ export const PostCard = ({ post, onPress }: PostCardProps) => {
               <Text
                 style={styles.preview}
                 numberOfLines={isExpanded ? undefined : 2}
-                onTextLayout={({ nativeEvent }) => {
-                  const nextLineCount = nativeEvent.lines.length;
-                  if (nextLineCount !== previewLineCount) {
-                    setPreviewLineCount(nextLineCount);
-                  }
-                }}
               >
                 {post.preview}
               </Text>
