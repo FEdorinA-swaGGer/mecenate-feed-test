@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -29,6 +30,9 @@ const CommentPill = ({ count }: CommentPillProps) => (
 
 export const PostCard = ({ post, onPress }: PostCardProps) => {
   const isPaid = post.tier === 'paid';
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [previewLineCount, setPreviewLineCount] = useState(0);
+  const canExpand = useMemo(() => previewLineCount > 2, [previewLineCount]);
 
   return (
     <View style={styles.card}>
@@ -64,9 +68,33 @@ export const PostCard = ({ post, onPress }: PostCardProps) => {
           {isPaid ? (
             <PaidPostLockedSkeleton />
           ) : (
-            <Text style={styles.preview} numberOfLines={2}>
-              {post.preview}
-            </Text>
+            <>
+              <Text
+                style={styles.preview}
+                numberOfLines={isExpanded ? undefined : 2}
+                onTextLayout={({ nativeEvent }) => {
+                  const nextLineCount = nativeEvent.lines.length;
+                  if (nextLineCount !== previewLineCount) {
+                    setPreviewLineCount(nextLineCount);
+                  }
+                }}
+              >
+                {post.preview}
+              </Text>
+              {canExpand ? (
+                <Pressable
+                  onPress={() => setIsExpanded((prev) => !prev)}
+                  style={({ pressed }) => [
+                    styles.expandButton,
+                    pressed ? styles.expandButtonPressed : null,
+                  ]}
+                >
+                  <Text style={styles.expandButtonText}>
+                    {isExpanded ? 'Свернуть' : 'Показать ещё'}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </>
           )}
         </View>
       </Pressable>
@@ -141,6 +169,19 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.previewSecondary,
     lineHeight: theme.typography.previewSecondaryLineHeight,
     fontWeight: '500',
+  },
+  expandButton: {
+    marginTop: theme.spacing.sm,
+    alignSelf: 'flex-start',
+  },
+  expandButtonPressed: {
+    opacity: 0.8,
+  },
+  expandButtonText: {
+    color: theme.colors.accent,
+    fontSize: theme.typography.authorName,
+    lineHeight: theme.typography.authorNameLineHeight,
+    fontWeight: '600',
   },
   actionsRow: {
     flexDirection: 'row',

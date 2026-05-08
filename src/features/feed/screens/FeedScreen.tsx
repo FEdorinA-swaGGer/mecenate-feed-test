@@ -46,6 +46,7 @@ const FeedScreenBody = () => {
     data,
     isLoading,
     isError,
+    isFetchNextPageError,
     refetch,
     isRefetching,
     fetchNextPage,
@@ -172,6 +173,19 @@ const FeedScreenBody = () => {
             <View style={styles.footerLoader}>
               <ActivityIndicator color={theme.colors.accent} />
             </View>
+          ) : isFetchNextPageError ? (
+            <View style={styles.footerErrorWrap}>
+              <Text style={styles.footerErrorText}>Не удалось загрузить ещё</Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.footerRetryButton,
+                  pressed ? styles.footerRetryButtonPressed : null,
+                ]}
+                onPress={() => void fetchNextPage()}
+              >
+                <Text style={styles.footerRetryButtonText}>Повторить</Text>
+              </Pressable>
+            </View>
           ) : null
         }
       />
@@ -232,5 +246,29 @@ const styles = StyleSheet.create({
   },
   footerLoader: {
     paddingVertical: theme.spacing.md,
+    alignItems: 'center',
+  },
+  footerErrorWrap: {
+    paddingVertical: theme.spacing.md,
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  footerErrorText: {
+    color: theme.colors.danger,
+    fontSize: theme.typography.body,
+    textAlign: 'center',
+  },
+  footerRetryButton: {
+    backgroundColor: theme.colors.accent,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
+  footerRetryButtonPressed: {
+    opacity: 0.92,
+  },
+  footerRetryButtonText: {
+    color: theme.colors.accentText,
+    fontWeight: '600',
   },
 });
