@@ -1,6 +1,8 @@
 export const colors = {
   /** Feed background from the provided Figma frame */
   background: '#F2F4F7',
+  /** Post detail outer screen — Figma node «Детальный пост» (1:4108) */
+  postDetailScreenBackground: '#F5F8FD',
   surface: '#FFFFFF',
   textPrimary: '#111416',
   textSecondary: '#111416',
@@ -18,8 +20,13 @@ export const colors = {
   shadow: '#000000',
   pillBackground: '#EFF2F7',
   pillIconLike: '#57626F',
+  /** Active like pill — Figma liked state (63×36 pill asset) */
+  likePillActiveBackground: '#FF2B75',
+  likePillActiveContent: '#FFEAF1',
   pillIconComment: '#57626F',
   pillMetric: '#57626F',
+  /** Comments block title — Figma bottom_sheet label secondary */
+  postDetailCommentsLabel: '#68727D',
 };
 
 export const spacing = {
@@ -70,7 +77,37 @@ export const layout = {
   postCoverMediaAspectRatio: 1,
 };
 
+/** Feed tier tabs — Test Assignment (Figma scroll-news tabs) */
+export const feedTierFilter = {
+  trackHeight: 38,
+  trackPadding: 4,
+  /** Active segment — brand purple from Figma */
+  activeBackground: colors.paidDonatePrimary,
+  activeLabel: '#FFFFFF',
+  inactiveLabel: '#57626F',
+  trackBackground: '#FFFFFF',
+};
+
+/** Post detail — Figma «Детальный пост» scroll-news_content */
+export const postDetail = {
+  cardRadius: 12,
+  cardPaddingV: 12,
+  contentPaddingH: 16,
+  /** Main vertical stack inside card (author / media / buttons / comments) */
+  sectionGap: 16,
+  /** Image → title → body */
+  mediaBlockGap: 8,
+  /** Avatar row: gap between avatar and name */
+  authorAvatarGap: 12,
+  bodyFontSize: 15,
+  bodyLineHeight: 20,
+  commentRowPaddingV: 8,
+  commentBlockGap: 12,
+  commentNameBodyGap: 2,
+};
+
 /** Card + action row — values aligned to 8pt grid / typical Figma RN feed */
+
 export const feedCard = {
   cardRadius: 12,
   contentPaddingH: 16,

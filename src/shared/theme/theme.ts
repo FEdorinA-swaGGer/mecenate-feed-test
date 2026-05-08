@@ -1,7 +1,9 @@
 import {
   colors,
   feedCard,
+  feedTierFilter,
   layout,
+  postDetail,
   radius,
   shadows,
   spacing,
@@ -16,4 +18,6 @@ export const theme = {
   shadows,
   layout,
   feedCard,
+  feedTierFilter,
+  postDetail,
 };

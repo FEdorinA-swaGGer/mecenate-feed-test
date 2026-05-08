@@ -1,30 +1,17 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { AnimatedLikePill } from '../../post-detail/components/AnimatedLikePill';
 import { PostDto } from '../api/feed.types';
 import { PaidPostLockedCover, PaidPostLockedSkeleton } from './PaidPostPlaceholder';
 import { theme } from '../../../shared/theme/theme';
 
 type PostCardProps = {
   post: PostDto;
+  onPress?: () => void;
 };
 
-type LikePillProps = { count: number };
 type CommentPillProps = { count: number };
-
-const LikePill = ({ count }: LikePillProps) => (
-  <View style={styles.actionPill}>
-    <View style={styles.pillIconWrap}>
-      <Ionicons
-        name="heart-outline"
-        size={theme.feedCard.pillIconSize}
-        color={theme.colors.pillIconLike}
-      />
-    </View>
-    <Text style={styles.actionPillText}>{count}</Text>
-  </View>
-);
 
 const CommentPill = ({ count }: CommentPillProps) => (
   <View style={styles.actionPill}>
@@ -40,49 +27,53 @@ const CommentPill = ({ count }: CommentPillProps) => (
   </View>
 );
 
-export const PostCard = ({ post }: PostCardProps) => {
+export const PostCard = ({ post, onPress }: PostCardProps) => {
   const isPaid = post.tier === 'paid';
 
   return (
     <View style={styles.card}>
-      <View style={styles.insetHorizontal}>
-        <View style={styles.header}>
-          <Image source={{ uri: post.author.avatarUrl }} style={styles.avatar} />
-          <Text style={styles.displayName} numberOfLines={1}>
-            {post.author.displayName}
-          </Text>
+      <Pressable disabled={!onPress} onPress={onPress}>
+        <View style={styles.insetHorizontal}>
+          <View style={styles.header}>
+            <Image source={{ uri: post.author.avatarUrl }} style={styles.avatar} />
+            <Text style={styles.displayName} numberOfLines={1}>
+              {post.author.displayName}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <View
-        style={[styles.coverWrap, isPaid ? styles.coverWrapPaid : null]}
-        collapsable={false}
-      >
-        {isPaid ? (
-          <PaidPostLockedCover coverUrl={post.coverUrl} imageKey={`${post.id}:${post.coverUrl}`} />
-        ) : (
-          <Image
-            key={`${post.id}:${post.coverUrl}`}
-            source={{ uri: post.coverUrl }}
-            style={styles.coverImage}
-            resizeMode="cover"
-          />
-        )}
-      </View>
+        <View
+          style={[styles.coverWrap, isPaid ? styles.coverWrapPaid : null]}
+          collapsable={false}
+        >
+          {isPaid ? (
+            <PaidPostLockedCover coverUrl={post.coverUrl} imageKey={`${post.id}:${post.coverUrl}`} />
+          ) : (
+            <Image
+              key={`${post.id}:${post.coverUrl}`}
+              source={{ uri: post.coverUrl }}
+              style={styles.coverImage}
+              resizeMode="cover"
+            />
+          )}
+        </View>
+
+        <View style={styles.insetHorizontal}>
+          {!isPaid ? <Text style={styles.title}>{post.title}</Text> : null}
+
+          {isPaid ? (
+            <PaidPostLockedSkeleton />
+          ) : (
+            <Text style={styles.preview} numberOfLines={2}>
+              {post.preview}
+            </Text>
+          )}
+        </View>
+      </Pressable>
 
       <View style={styles.insetHorizontal}>
-        {!isPaid ? <Text style={styles.title}>{post.title}</Text> : null}
-
-        {isPaid ? (
-          <PaidPostLockedSkeleton />
-        ) : (
-          <Text style={styles.preview} numberOfLines={2}>
-            {post.preview}
-          </Text>
-        )}
-
         <View style={styles.actionsRow}>
-          <LikePill count={post.likesCount} />
+          <AnimatedLikePill post={post} />
           <CommentPill count={post.commentsCount} />
         </View>
       </View>
@@ -95,7 +86,8 @@ const fc = theme.feedCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    marginBottom: theme.spacing.lg,
+    /** Figma `content`: gap 12 between feed items */
+    marginBottom: theme.spacing.md,
     width: '100%',
   },
   insetHorizontal: {
